@@ -48,3 +48,9 @@ version:    4.7.5
 size:       212M
 file-count: 3910
 ```
+
+## B.) License
+
+MIT © [Björn Hempel](https://www.ixno.de/project-analyser)
+
+Have fun! :)
