@@ -3,6 +3,9 @@
 # declare parameter list array
 PARAMETERS=()
 
+# some default vars
+SHOW_ONLY_APP_NAME=false
+
 # read arguments
 # help:
 # help: A project analyser by Björn Hempel <bjoern@hempel.li>
@@ -21,6 +24,12 @@ while [[ $# > 0 ]]; do
             version=$(getRepositoryVersion "$pathRoot")
             echo "$version"
             exit 0
+            ;;
+
+        # help:
+        # help:         --show-only-app-name      Shows only the app name.
+        --show-only-app-name)
+            SHOW_ONLY_APP_NAME=true
             ;;
 
         # help:

@@ -103,13 +103,21 @@ fi
 # analyse the given path
 eval "declare -A project="$(analyzeProject "$path")
 
+if $SHOW_ONLY_APP_NAME; then
+    echo "${project[app]}"
+
+    exit 0
+fi
+
 # some other analysations
 size=$(du -sh "$path" | awk '{ print $1 }')
 fileCount=$(find "$path" -type f | wc -l)
 
 # print out the app informations
-echo "app:        "${project[app]}
-echo "version:    "${project[version]}
-echo "size:       "$size
-echo "file-count: "$fileCount
+echo "app:        ${project[app]}"
+echo "version:    ${project[version]}"
+echo "size:       $size"
+echo "file-count: $fileCount"
+
+exit 0
 
