@@ -49,6 +49,13 @@ size:       212M
 file-count: 3910
 ```
 
+### 1.3) Only show the application name (`--show-only-app-name`)
+
+```
+user$ project-analyser /var/www/de/[domain]/[subdomain]/wordpress/html --show-only-app-name
+Wordpress
+```
+
 ## B.) License
 
 MIT © [Björn Hempel](https://www.ixno.de/project-analyser)
