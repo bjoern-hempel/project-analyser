@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# A project analyser.
+#
+# @author    Björn Hempel <bjoern@hempel.li>
+# @version   1.0 (2017-07-05)
+#
+# @copyright MIT License
+# @copyright
+# @copyright Copyright (c) 2017 Björn Hempel
+# @copyright
+# @copyright Permission is hereby granted, free of charge, to any person obtaining a copy
+# @copyright of this software and associated documentation files (the "Software"), to deal
+# @copyright in the Software without restriction, including without limitation the rights
+# @copyright to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# @copyright copies of the Software, and to permit persons to whom the Software is
+# @copyright furnished to do so, subject to the following conditions:
+# @copyright
+# @copyright The above copyright notice and this permission notice shall be included in all
+# @copyright copies or substantial portions of the Software.
+# @copyright
+# @copyright THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# @copyright IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# @copyright FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# @copyright AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# @copyright LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# @copyright OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# @copyright SOFTWARE.
+# @copyright
+# @copyright Written by Björn Hempel <bjoern@hempel.li>.
+# ------------
+
+# some needed applications
+applications=()
+
+# some config
+checkRootUser=false
+
+# makes the regexp search case insensitive
+shopt -s nocasematch
+
+# some configs
+       FRIENDS_OF_BASH_ROOT="/opt/friends-of-bash/friends-of-bash"
+FRIENDS_OF_BASH_SOURCE_FILE="$FRIENDS_OF_BASH_ROOT/lib/all"
+
+# include friends of bash
+source "$FRIENDS_OF_BASH_SOURCE_FILE"
+
+# some calculable configs before
+if [ -h "${BASH_SOURCE[0]}" ]; then
+    realScriptname=$(readlink "${BASH_SOURCE[0]}")
+    pathRoot=$(dirname "$realScriptname")
+    scriptname="${BASH_SOURCE[0]}"
+else
+    scriptname="$0"
+    pathRoot="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+# translate /usr/local/bin script names
+[[ "$scriptname" =~ "/usr/local/bin" ]] && scriptname=$(basename "$scriptname")
+
+# because we are inside the bin folder
+pathRoot=$(dirname "$pathRoot")
+
+# include some libraries
+source "$pathRoot/lib/functions"
+source "$pathRoot/lib/parameter"
+
+# check the current used user
+if $checkRootUser; then
+    userId=$(id -u)
+
+    if [[ $userId -ne 0 ]]; then
+        echo "Please run this script as root."
+        echo "sudo $0 ..."
+        exit 1
+    fi
+fi
+
+# check applications
+for application in "${applications[@]}"; do
+    which $application >/dev/null
+
+    if [ "$?" -gt "0" ]; then
+        echo "Application \"$application\" is not installed. Please install it before continuing. Abort.."
+        exit
+    fi
+done
+
+# check parameter count
+if [ "${#PARAMETERS[@]}" -lt 1 ]; then
+    path=$(pwd)
+else
+    path="${PARAMETERS[0]}"
+fi
+
+# check path
+if [ ! -d "$path" ]; then
+    echo "The given path \"$path\" was not found."
+    exit 1
+fi
+
+# analyse the given path
+eval "declare -A project="$(analyzeProject "$path")
+
+# some other analysations
+size=$(du -sh "$path" | awk '{ print $1 }')
+fileCount=$(find "$path" -type f | wc -l)
+
+# print out the app informations
+echo "app:        "${project[app]}
+echo "version:    "${project[version]}
+echo "size:       "$size
+echo "file-count: "$fileCount
+

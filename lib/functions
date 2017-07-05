@@ -1,0 +1,141 @@
+#!/bin/bash
+
+# ------------
+# Analyzes the given project path and tries to find out the app and version number.
+#
+# @author  Björn Hempel
+# @version 1.0 (2017-07-05)
+# ------------
+analyzeProject()
+{
+    local uri="$1"
+
+    local scheme=""
+    local   path="$uri"
+
+    local     app='unknown'
+    local version='unknown'
+
+    # the return array
+    declare -A ret=()
+
+    # check the uri
+    if [[ "$uri" =~ ^([a-z]+)://(.+) ]]; then
+        scheme="${BASH_REMATCH[1]}"
+        path="${BASH_REMATCH[2]}"
+    fi
+
+    # redirection or proxy-pass
+    if [[ "$scheme" =~ ^http ]]; then
+            ret[app]='redirection'
+        ret[version]='not available'
+
+        local retDeclare=$(declare -p ret)
+
+        echo "${retDeclare#*=}"
+        return 0
+    fi
+
+    # path does not exist
+    if [ ! -d "$path" ]; then
+        # return array¬
+        declare -A ret=()
+            ret[app]='not available'
+        ret[version]='not available'
+
+        local retDeclare=$(declare -p ret)
+
+        echo "${retDeclare#*=}"
+        return 1
+    fi
+
+    # some vars
+    local projectPath="$path"
+    local  startPath=$(pwd)
+    cd "$projectPath"
+
+    # contao
+    if [ "$app" == "unknown" ] && [ -d "contao" ] && [ -f "system/config/constants.php" ]; then
+        app='Contao'
+        version=$(php -r 'include_once "system/config/constants.php"; echo VERSION;')
+    fi
+
+    # symfony
+    if [ "$app" == "unknown" ] && [ -f "app.php" ] && [ -d "../app" ]; then
+        cd ..
+    fi
+    if [ "$app" == "unknown" ] && [ -d "app" ] && [ -f "app/console" ]; then
+        app='Symfony'
+        version=$(app/console --version | awk '{print $3}' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g")
+    fi
+
+    # TYPO3
+    if [ "$app" == "unknown" ] && ([ -d "typo3_src/typo3" ] || [ -d "typo3" ]); then
+        app='TYPO3'
+        version="unknown"
+
+        local typo3src=""
+        [ -d "typo3_src/typo3" ] && typo3src="typo3_src/typo3"
+        [ -d "typo3"           ] && typo3src="typo3"
+
+        pathSystemEnvironmentBuilder="$typo3src/sysext/core/Classes/Core/SystemEnvironmentBuilder.php"
+        if [ -f "$pathSystemEnvironmentBuilder" ]; then
+            version=$([[ $(grep --no-filename -r "define('TYPO3_version'" "$pathSystemEnvironmentBuilder") =~ TYPO3_version\',[[:space:]]*\'([^\']*) ]] && echo ${BASH_REMATCH[1]})
+        fi
+    fi
+
+    # Wordpress
+    if [ "$app" == "unknown" ] && [ -d "wordpress" ]; then
+        cd "wordpress"
+    fi
+    if [ "$app" == "unknown" ] && [ -d "wp-admin" ]; then
+        app='Wordpress'
+        version='unknown'
+
+        versionFile='wp-includes/version.php'
+        if [ -f "$versionFile" ]; then
+            version=$([[ $(grep --no-filename -r "\$wp_version =" "$versionFile") =~ wp_version[[:space:]]*=[[:space:]]*\'([^\']*) ]] && echo ${BASH_REMATCH[1]})
+        fi
+    fi
+
+    # Dresden Frontend Tool
+    if [ "$app" == "unknown" ] && [ -d "dd-fe-tool" ]; then
+        app='DD Frontend Tool (Silex)'
+
+        cd "dd-fe-tool"
+
+        versionFile='vendor/silex/silex/src/Silex/Application.php'
+        if [ -f "$versionFile" ]; then
+            version=$([[ $(grep --no-filename -r "VERSION =" "$versionFile") =~ VERSION[[:space:]]*=[[:space:]]*\'([^\']*) ]] && echo ${BASH_REMATCH[1]})
+        fi
+    fi
+
+    # index.php
+    if [ "$app" == "unknown" ] && [ -f "index.php" ]; then
+        app='PHP project'
+        version='PHP '$(php -v | grep -E "PHP [0-9]" | awk '{print $2}')
+    fi
+
+    # index.html
+    if [ "$app" == "unknown" ] && [ -d "html" ]; then
+        cd "html"
+    fi
+    if [ "$app" == "unknown" ] && [ -f "index.html" ]; then
+        app='HTML project'
+        version='unknown'
+    fi
+
+    # return array
+    declare -A ret=()
+        ret[app]="$app"
+    ret[version]="$version"
+
+    # return the array
+    local retDeclare=$(declare -p ret)
+    echo "${retDeclare#*=}"
+
+    # save start path
+    cd "$startPath"
+
+    return 0
+}

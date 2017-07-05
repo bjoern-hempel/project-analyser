@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# declare parameter list array
+PARAMETERS=()
+
+# read arguments
+# help:
+# help: A project analyser by Björn Hempel <bjoern@hempel.li>
+# help:
+# help: Usage: %scriptname% [options...] [<path>]
+while [[ $# > 0 ]]; do
+    case "$1" in
+        # help:  -h,    --help                    Shows this help.
+        -h|--help)
+            cat "$pathRoot/lib/parameter" | grep "# help:" | grep -v 'cat parameter' | sed 's/[ ]*# help:[ ]\?//g' | sed "s~%scriptname%~$scriptname~g"
+            exit 0
+            ;;
+
+        # help:  -v,    --version                 Shows the version number.
+        -v|--version)
+            version=$(getRepositoryVersion "$pathRoot")
+            echo "$version"
+            exit 0
+            ;;
+
+        # help:
+        #
+        # collect all unknown parameters
+        #
+        *)
+            PARAMETERS+=("$1")
+            ;;
+    esac
+    shift
+done
+
