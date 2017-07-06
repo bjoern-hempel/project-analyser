@@ -9,6 +9,7 @@ PARAMETERS=()
 
 # some default vars
 SHOW_ONLY_APP_NAME=false
+ANALYSE_VIRTUAL_HOSTS=false
 
 # read arguments
 # help:
@@ -39,6 +40,12 @@ while [[ $# > 0 ]]; do
         # help:         --show-only-app-name      Shows only the app name.
         --show-only-app-name)
             SHOW_ONLY_APP_NAME=true
+            ;;
+
+        # help:
+        # help:         --analyse-virtual-hosts   Tries to detect the virtual host from given path.
+        --analyse-virtual-hosts)
+            ANALYSE_VIRTUAL_HOSTS=true
             ;;
 
         # help:

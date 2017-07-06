@@ -66,6 +66,11 @@ pathRoot=$(dirname "$pathRoot")
 source "$pathRoot/lib/functions"
 source "$pathRoot/lib/arguments"
 
+# virtual host checker needs root credentials
+if $ANALYSE_VIRTUAL_HOSTS; then
+    checkRootUser=true
+fi
+
 # check the current used user
 if $checkRootUser; then
     userId=$(id -u)
@@ -89,19 +94,19 @@ done
 
 # check parameter count
 if [ "${#PARAMETERS[@]}" -lt 1 ]; then
-    path=$(pwd)
+    projectPath=$(pwd)
 else
-    path="${PARAMETERS[0]}"
+    projectPath="${PARAMETERS[0]}"
 fi
 
-# check path
-if [ ! -d "$path" ]; then
-    echo "The given path \"$path\" was not found."
+# check the given project path
+if [ ! -d "$projectPath" ]; then
+    echo "The given project path \"$projectPath\" was not found."
     exit 1
 fi
 
-# analyse the given path
-eval "declare -A project="$(analyzeProject "$path")
+# analyse the given project path
+eval "declare -A project="$(analyzeProject "$projectPath")
 
 if $SHOW_ONLY_APP_NAME; then
     echo "${project[app]}"
@@ -109,15 +114,26 @@ if $SHOW_ONLY_APP_NAME; then
     exit 0
 fi
 
+# try to detect the servername from the virtual host
+servername=""
+if $ANALYSE_VIRTUAL_HOSTS; then
+    if [ "$DOCKER_NAME" == "" ] && ! applicationExists apachectl; then
+        echo 'It seems that the apache is not installed on this system. Do this before continue. Abort..' && exit
+    fi
+
+    servername=$(getServerNameFromProjectPath "$projectPath")
+fi
+
 # some other analysations
-size=$(du -sh "$path" | awk '{ print $1 }')
-fileCount=$(find "$path" -type f | wc -l)
+size=$(du -sh "$projectPath" | awk '{ print $1 }')
+fileCount=$(find "$projectPath" -type f | wc -l)
 
 # print out the app informations
-echo "app:        ${project[app]}"
-echo "version:    ${project[version]}"
-echo "size:       $size"
-echo "file-count: $fileCount"
+[ "$servername" != "" ] && echo "servername: $servername"
+                           echo "app:        ${project[app]}"
+                           echo "version:    ${project[version]}"
+                           echo "size:       $size"
+                           echo "file-count: $fileCount"
 
 exit 0
 
