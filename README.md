@@ -56,6 +56,19 @@ user$ project-analyser /var/www/de/[domain]/[subdomain]/wordpress/html --show-on
 Wordpress
 ```
 
+### 1.4) Also try to analyse the virtual hosts (`--analyse-virtual-hosts`)
+
+ATTENTION: This process needs admin rights!
+
+```
+user$ sudo project-analyser /var/www/de/[domain]/[subdomain]/wordpress/html --analyse-virtual-hosts
+servername: wordpress.[subdomain].[domain].de
+app:        Wordpress
+version:    4.7.5
+size:       212M
+file-count: 3910
+```
+
 ## B.) License
 
 MIT © [Björn Hempel](https://www.ixno.de/project-analyser)
