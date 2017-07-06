@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# author settings
+AUTHOR="Björn Hempel"
+EMAIL="bjoern@hempel.li"
+
 # declare parameter list array
 PARAMETERS=()
 
@@ -8,14 +12,19 @@ SHOW_ONLY_APP_NAME=false
 
 # read arguments
 # help:
-# help: A project analyser by Björn Hempel <bjoern@hempel.li>
+# help: A project analyser (%version%) by %author% <%email%>.
 # help:
 # help: Usage: %scriptname% [options...] [<path>]
 while [[ $# > 0 ]]; do
     case "$1" in
         # help:  -h,    --help                    Shows this help.
         -h|--help)
-            cat "$BASH_SOURCE" | grep "# help:" | grep -v 'cat parameter' | sed 's/[ ]*# help:[ ]\?//g' | sed "s~%scriptname%~$scriptname~g"
+            version=$(getRepositoryVersion "$pathRoot" true)
+            cat "$BASH_SOURCE" | grep "# help:" | grep -v 'cat parameter' | sed 's/[ ]*# help:[ ]\?//g' | \
+                sed "s~%scriptname%~$scriptname~g" | \
+                sed "s~%version%~$version~g" | \
+                sed "s~%author%~$AUTHOR~g" | \
+                sed "s~%email%~$EMAIL~g"
             exit 0
             ;;
 
