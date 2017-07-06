@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# ------------
 # A project analyser.
 #
 # @author    Björn Hempel <bjoern@hempel.li>
@@ -66,6 +67,14 @@ pathRoot=$(dirname "$pathRoot")
 source "$pathRoot/lib/functions"
 source "$pathRoot/lib/arguments"
 
+# check installed friends of library apps
+message=$(checkCurrentVersionNumbers "$pathRoot/.require")
+lastStatus=$?
+if [ $lastStatus -gt 0 ]; then
+    echo "$message Abort.."
+    exit 1
+fi
+
 # virtual host checker needs root credentials
 if $ANALYSE_VIRTUAL_HOSTS; then
     checkRootUser=true
@@ -88,7 +97,7 @@ for application in "${applications[@]}"; do
 
     if [ "$?" -gt "0" ]; then
         echo "Application \"$application\" is not installed. Please install it before continuing. Abort.."
-        exit
+        exit 1
     fi
 done
 
