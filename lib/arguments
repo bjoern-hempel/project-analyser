@@ -20,7 +20,7 @@ SHOW_DETAILED_W3C_ERRORS=false
 # help: Usage: %scriptname% [options...] [<path>]
 while [[ $# > 0 ]]; do
     case "$1" in
-        # help:  -h,    --help                    Shows this help.
+        # help:  -h,    --help                     Shows this help.
         -h|--help)
             version=$(getRepositoryVersion "$pathRoot" true)
             cat "$BASH_SOURCE" | grep "# help:" | grep -v 'cat parameter' | sed 's/[ ]*# help:[ ]\?//g' | \
@@ -31,7 +31,7 @@ while [[ $# > 0 ]]; do
             exit 0
             ;;
 
-        # help:  -v,    --version                 Shows the version number.
+        # help:  -v,    --version                  Shows the version number.
         -v|--version)
             version=$(getRepositoryVersion "$pathRoot")
             echo "$version"
@@ -39,19 +39,19 @@ while [[ $# > 0 ]]; do
             ;;
 
         # help:
-        # help:         --show-only-app-name      Shows only the app name.
+        # help:         --show-only-app-name       Shows only the app name.
         --show-only-app-name)
             SHOW_ONLY_APP_NAME=true
             ;;
 
         # help:
-        # help:         --analyse-virtual-hosts   Tries to detect the virtual host from given path.
+        # help:         --analyse-virtual-hosts    Tries to detect the virtual host from given path.
         --analyse-virtual-hosts)
             ANALYSE_VIRTUAL_HOSTS=true
             ;;
 
         # help:
-        # help:         --show-detailed-w3c-errors
+        # help:         --show-detailed-w3c-errors Shows w3c errors in detail if available.
         --show-detailed-w3c-errors)
             ANALYSE_VIRTUAL_HOSTS=true
             SHOW_DETAILED_W3C_ERRORS=true
