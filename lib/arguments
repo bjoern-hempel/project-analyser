@@ -10,6 +10,8 @@ PARAMETERS=()
 # some default vars
 SHOW_ONLY_APP_NAME=false
 ANALYSE_VIRTUAL_HOSTS=false
+SHOW_DETAILED_W3C_INFORMATIONS=false
+SHOW_DETAILED_W3C_ERRORS=false
 
 # read arguments
 # help:
@@ -46,6 +48,13 @@ while [[ $# > 0 ]]; do
         # help:         --analyse-virtual-hosts   Tries to detect the virtual host from given path.
         --analyse-virtual-hosts)
             ANALYSE_VIRTUAL_HOSTS=true
+            ;;
+
+        # help:
+        # help:         --show-detailed-w3c-errors
+        --show-detailed-w3c-errors)
+            ANALYSE_VIRTUAL_HOSTS=true
+            SHOW_DETAILED_W3C_ERRORS=true
             ;;
 
         # help:

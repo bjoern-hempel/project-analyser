@@ -125,12 +125,34 @@ fi
 
 # try to detect the servername from the virtual host
 servername=""
+redirectUrl=""
+w3cJson=""
+countErrors=0
+countWarnings=0
 if $ANALYSE_VIRTUAL_HOSTS; then
     if [ "$DOCKER_NAME" == "" ] && ! applicationExists apachectl; then
         echo 'It seems that the apache is not installed on this system. Do this before continue. Abort..' && exit
     fi
 
     servername=$(getServerNameFromProjectPath "$projectPath")
+
+    if [ "$servername" != "" ]; then
+        redirectUrl=$(getLastRedirectedUrl "$servername")
+    fi
+
+    if [ "$redirectUrl" != "" ]; then
+        w3cJson=$(getW3CCheck "$redirectUrl")
+    fi
+
+    if [ "$w3cJson" != "" ]; then
+        if $SHOW_DETAILED_W3C_ERRORS; then
+            w3cErrors=$(getFilteredJsonArray "$w3cJson" '.type == "error"' ".messages")
+            echo "$w3cErrors" | jq .[] | jq '{"type": .type, "line": .lastLine, "column": .firstColumn, "message": .message, "extract": .extract}' && exit
+        fi
+
+        countErrors=$(getCountOfFilteredJsonArray "$w3cJson" '.type == "error"' ".messages")
+        countWarnings=$(getCountOfFilteredJsonArray "$w3cJson" '.type == "info" and .subType == "warning"' ".messages")
+    fi
 fi
 
 # some other analysations
@@ -138,11 +160,15 @@ size=$(du -sh "$projectPath" | awk '{ print $1 }')
 fileCount=$(find "$projectPath" -type f | wc -l)
 
 # print out the app informations
-[ "$servername" != "" ] && echo "servername: $servername"
-                           echo "app:        ${project[app]}"
-                           echo "version:    ${project[version]}"
-                           echo "size:       $size"
-                           echo "file-count: $fileCount"
+[ "$servername"  != "" ] && echo "servername:   $servername"
+[ "$redirectUrl" != "" ] && echo "redirect-url: $redirectUrl"
+                            echo "app:          ${project[app]}"
+                            echo "version:      ${project[version]}"
+                            echo "size:         $size"
+                            echo "file-count:   $fileCount"
+[ "$redirectUrl" != "" ] && echo "w3c-errors:   $countErrors"
+[ "$redirectUrl" != "" ] && echo "w3c-warnings: $countWarnings"
+
 
 exit 0
 

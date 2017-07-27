@@ -139,3 +139,20 @@ analyzeProject()
 
     return 0
 }
+
+# ------------
+# Pass the given url to the external w3c check and returns the json result.
+#
+# @author  Björn Hempel
+# @version 1.0 (2017-07-27)
+# ------------
+getW3CCheck()
+{
+    local url="$1"
+    local w3cChecker="http://w3c.ixno.de:8888/html5/"
+
+    local json=$(curl -s --insecure "$w3cChecker?out=json&doc=$url")
+
+    echo "$json"
+}
+
