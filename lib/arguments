@@ -12,6 +12,7 @@ SHOW_ONLY_APP_NAME=false
 ANALYSE_VIRTUAL_HOSTS=false
 SHOW_DETAILED_W3C_INFORMATIONS=false
 SHOW_DETAILED_W3C_ERRORS=false
+SHOW_NUMBER_W3C_ERRORS=false
 
 # read arguments
 # help:
@@ -53,8 +54,13 @@ while [[ $# > 0 ]]; do
         # help:
         # help:         --show-detailed-w3c-errors Shows w3c errors in detail if available.
         --show-detailed-w3c-errors)
-            ANALYSE_VIRTUAL_HOSTS=true
+            #ANALYSE_VIRTUAL_HOSTS=true
             SHOW_DETAILED_W3C_ERRORS=true
+            ;;
+
+        # help:         --show-number-w3c-errors   Shows the number of w3c errors if available.
+        --show-number-w3c-errors)
+            SHOW_NUMBER_W3C_ERRORS=true
             ;;
 
         # help:

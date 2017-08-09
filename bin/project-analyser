@@ -43,6 +43,8 @@ shopt -s nocasematch
 # some configs
        FRIENDS_OF_BASH_ROOT="/opt/friends-of-bash/friends-of-bash"
 FRIENDS_OF_BASH_SOURCE_FILE="$FRIENDS_OF_BASH_ROOT/lib/all"
+                CONFIG_PATH="/etc/project-analyser"
+                CONFIG_FILE="$CONFIG_PATH/vhosts"
 
 # include friends of bash
 source "$FRIENDS_OF_BASH_SOURCE_FILE"
@@ -91,6 +93,16 @@ if $checkRootUser; then
     fi
 fi
 
+# the config path does not exist
+if [ ! -d "$CONFIG_PATH" ]; then
+    mkdir "$CONFIG_PATH"
+fi
+
+# the config file does not exist
+if [ ! -f "$CONFIG_FILE" ]; then
+    touch "$CONFIG_FILE"
+fi
+
 # check applications
 for application in "${applications[@]}"; do
     which $application >/dev/null
@@ -114,6 +126,36 @@ if [ ! -d "$projectPath" ]; then
     exit 1
 fi
 
+# set some default vars
+servername=""
+redirectUrl=""
+w3cJson=""
+countErrors=0
+countWarnings=0
+
+if ! $ANALYSE_VIRTUAL_HOSTS; then
+    # read config file
+    cfgParser "$CONFIG_FILE" 'vhost'
+
+    currentConfig="vhost.${PWD}"
+    configFound=false
+
+    # check if the current dir config already exists
+    for vhostFunction in "${vhostFunctions[@]}"; do
+        if [ "$currentConfig" == $vhostFunction ]; then
+            configFound=true
+            break;
+        fi
+    done
+
+    # the current config was not found within the config file $CONFIG_FILE
+    if ! $configFound; then
+        echo "The current config $currentConfig was not found within the config file \"$CONFIG_FILE\". Abort.." && exit 0
+    fi
+
+    $currentConfig
+fi
+
 # analyse the given project path
 eval "declare -A project="$(analyzeProject "$projectPath")
 
@@ -124,11 +166,6 @@ if $SHOW_ONLY_APP_NAME; then
 fi
 
 # try to detect the servername from the virtual host
-servername=""
-redirectUrl=""
-w3cJson=""
-countErrors=0
-countWarnings=0
 if $ANALYSE_VIRTUAL_HOSTS; then
     if [ "$DOCKER_NAME" == "" ] && ! applicationExists apachectl; then
         echo 'It seems that the apache is not installed on this system. Do this before continue. Abort..' && exit
@@ -139,20 +176,31 @@ if $ANALYSE_VIRTUAL_HOSTS; then
     if [ "$servername" != "" ]; then
         redirectUrl=$(getLastRedirectedUrl "$servername")
     fi
+fi
 
-    if [ "$redirectUrl" != "" ]; then
-        w3cJson=$(getW3CCheck "$redirectUrl")
+# with a redirect url we can do a w3c check
+if [ "$redirectUrl" != "" ]; then
+    w3cJson=$(getW3CCheck "$redirectUrl")
+fi
+
+# with a w3c json file we can count the errors
+if [ "$w3cJson" != "" ]; then
+    if $SHOW_DETAILED_W3C_ERRORS; then
+        w3cErrors=$(getFilteredJsonArray "$w3cJson" '.type == "error"' ".messages")
+        echo "$w3cErrors" | jq .[] | jq '{"type": .type, "line": .lastLine, "column": .firstColumn, "message": .message, "extract": .extract}' && exit
     fi
 
-    if [ "$w3cJson" != "" ]; then
-        if $SHOW_DETAILED_W3C_ERRORS; then
-            w3cErrors=$(getFilteredJsonArray "$w3cJson" '.type == "error"' ".messages")
-            echo "$w3cErrors" | jq .[] | jq '{"type": .type, "line": .lastLine, "column": .firstColumn, "message": .message, "extract": .extract}' && exit
-        fi
+    countErrors=$(getCountOfFilteredJsonArray "$w3cJson" '.type == "error"' ".messages")
+    countWarnings=$(getCountOfFilteredJsonArray "$w3cJson" '.type == "info" and .subType == "warning"' ".messages")
+fi
 
-        countErrors=$(getCountOfFilteredJsonArray "$w3cJson" '.type == "error"' ".messages")
-        countWarnings=$(getCountOfFilteredJsonArray "$w3cJson" '.type == "info" and .subType == "warning"' ".messages")
+# only show the number of w3c errors
+if $SHOW_NUMBER_W3C_ERRORS; then
+    if [ "$countErrors" == "" ]; then
+        echo "Unable to detect the w3c errors." && exit 1
     fi
+
+    echo "$countErrors" && exit 0
 fi
 
 # some other analysations
