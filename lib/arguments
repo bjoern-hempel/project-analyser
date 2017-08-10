@@ -9,6 +9,7 @@ PARAMETERS=()
 
 # some default vars
 SHOW_ONLY_APP_NAME=false
+SHOW_ONLY_REDIRECT_URL=false
 ANALYSE_VIRTUAL_HOSTS=false
 SHOW_DETAILED_W3C_INFORMATIONS=false
 SHOW_DETAILED_W3C_ERRORS=false
@@ -44,6 +45,11 @@ while [[ $# > 0 ]]; do
         # help:         --show-only-app-name        Shows only the app name.
         --show-only-app-name)
             SHOW_ONLY_APP_NAME=true
+            ;;
+
+        # help:         --show-only-redirect-url    Shows only the redirect url.
+        --show-only-redirect-url)
+            SHOW_ONLY_REDIRECT_URL=true
             ;;
 
         # help:

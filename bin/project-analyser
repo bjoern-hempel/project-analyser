@@ -267,6 +267,15 @@ if [ "$servername" != "" ]; then
     redirectUrl=$(getLastRedirectedUrl "$servername")
 fi
 
+if $SHOW_ONLY_REDIRECT_URL; then
+    if [ "$redirectUrl" == "" ]; then
+        exit 1
+    fi
+
+    echo "$redirectUrl"
+    exit 0
+fi
+
 # with a redirect url we can do a w3c check
 if [ "$redirectUrl" != "" ]; then
     w3cJson=$(getW3CCheck "$redirectUrl")
