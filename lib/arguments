@@ -54,7 +54,7 @@ while [[ $# > 0 ]]; do
             ;;
 
         # help:
-        # help:         --analyse-virtual-hosts     Tries to detect the virtual host from given path.
+        # help:         --analyse-virtual-hosts     Tries to detect the virtual host from given path (needs admin rights).
         --analyse-virtual-hosts)
             ANALYSE_VIRTUAL_HOSTS=true
             ;;

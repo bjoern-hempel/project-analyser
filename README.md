@@ -32,11 +32,21 @@ user$ cd .. && rm -rf friends-of-bash
 ```
 user$ project-analyser --help
 
-A project analyser by Björn Hempel <bjoern@hempel.li>
+A project analyser (v0.0.15) by Björn Hempel <bjoern@hempel.li>.
 
-Usage: bin/project-analyser [options...] [<path>]
- -h,    --help                    Shows this help.
- -v,    --version                 Shows the version number.
+Usage: project-analyser [options...] [<path>]
+ -h,    --help                      Shows this help.
+ -v,    --version                   Shows the version number.
+
+        --show-only-app-name        Shows only the app name.
+        --show-only-redirect-url    Shows only the redirect url.
+
+        --analyse-virtual-hosts     Tries to detect the virtual host from given path (needs admin rights).
+
+        --show-detailed-w3c-errors  Shows w3c errors in detail if available.
+        --show-number-w3c-errors    Shows the number of w3c errors if available.
+
+        --write-vhosts-config-file  Writes the vhosts config file (needs admin rights).
 ```
 
 ### 1.2) Simply return the app type, version number, file size and count
